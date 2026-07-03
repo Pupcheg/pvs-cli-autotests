@@ -6,11 +6,6 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None):
     """
     Runs a static analyzer on the given source file.
     You can specify a timeout in seconds. If the static analyzer takes longer than the timeout, it will be terminated.
-
-
-    Запускает статический анализатор, расположенный по указанному пути, на заданном файле.
-    Вы можете указать тайм-аут в секундах. Если статический анализатор выполняется дольше указанного времени, он будет завершен.
-
     """
 
     source_file_dir = Path(source_file_dir)
