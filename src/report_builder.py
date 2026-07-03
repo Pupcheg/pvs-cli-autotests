@@ -114,8 +114,3 @@ def build_report(
 
     generate_report(results, output_path=output_path, analyzer_version=analyzer_version)
     print(f"Отчёт сохранён: {Path(output_path).absolute()}")
-
-
-if __name__ == "__main__":
-    reports_dir = Path(__file__).parent.parent / "reports"
-    build_report(str(reports_dir), analyzer_version="1.2.3")
