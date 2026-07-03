@@ -90,20 +90,30 @@ def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str,
     return results
 
 
-def build_report(reports_dir: str = "reports", analyzer_version: Optional[str] = None):
+def build_report(
+    reports_dir: str = "reports",
+    output_path: Optional[str] = None,
+    analyzer_version: Optional[str] = None
+):
     """
-    Основная функция: собирает результаты и генерирует отчёт.
+    Собирает результаты и генерирует отчёт.
+
+    - reports_dir: папка, где лежат JSON-отчёты (по умолчанию "reports")
+    - output_path: куда сохранить report.md (если None, то reports/final/report.md)
+    - analyzer_version: версия анализатора
     """
     results = collect_results_from_reports(reports_dir)
     if not results:
         print("Не найдено результатов для отчёта.")
         return
 
-    final_dir = Path(reports_dir) / "final"
-    final_dir.mkdir(parents=True, exist_ok=True)
-    output_path = final_dir / "report.md"
-    generate_report(results, output_path=str(output_path), analyzer_version=analyzer_version)
-    print(f"Отчёт сохранён: {output_path.absolute()}")
+    if output_path is None:
+        final_dir = Path(reports_dir) / "final"
+        final_dir.mkdir(parents=True, exist_ok=True)
+        output_path = str(final_dir / "report.md")
+
+    generate_report(results, output_path=output_path, analyzer_version=analyzer_version)
+    print(f"Отчёт сохранён: {Path(output_path).absolute()}")
 
 
 if __name__ == "__main__":
