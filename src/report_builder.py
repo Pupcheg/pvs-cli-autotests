@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from typing import List, Dict, Any, Optional
-from report_generator import generate_report
+from src.report_generator import generate_report
 
 
 def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str, Any]]:
