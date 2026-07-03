@@ -1,16 +1,16 @@
 from src.run_tests import run_tests
-import argparse
-import os
+from src.report_builder import build_report
 
-if __name__ == "__main__":  # пример работы. используйте только анлийские буквы в путях 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("analyzer_path", help="Path to the executable file (*.exe).")
-    parser.add_argument("--report",default="reports", help="Path to save the report (*.md).")# пока не работает. Жду когда Родион поправит код для отчетов
-    args=parser.parse_args()
-    if os.path.exists(args.analyzer_path) and os.path.isfile(args.analyzer_path):
-        stdout, stderr, code = run_tests(args.analyzer_path)
-        print(stdout, stderr, code)
-    else:
-        print("Рath invalid.")
+if __name__ == "__main__":
+    # 1. Запускаем тесты
+    stdout, stderr, code = run_tests(
+        "C:\\Program Files (x86)\\PVS-Studio\\pvs-js\\pvs-js.exe")
+    print(stdout, stderr, code)
     
- 
+    # 2. Генерируем отчёт по результатам
+    build_report(
+        reports_dir="reports",
+        analyzer_version="7.42.122+486086bb"  # версия из --version
+    )
+
+
