@@ -23,31 +23,13 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None):
         return None, f"Static analyzer not found at {static_analyzer_path}", -1, None   
     if not source_file_dir.is_dir():
         return None, f"Source file not found at {source_file_dir}", -1, None
-    
+
+    report_path = reports_dir / (source_file_dir.stem + '_report.json')
+    cmd = [f"{static_analyzer_path}", "analyze", f"{source_file_dir}", "-o", f"{report_path}"]
+
+    # Запуск анализатора
     try:
-        report_path = reports_dir / (source_file_dir.stem + '_report.json')
-        cmd = [str(static_analyzer_path), "analyze", str(source_file_dir), "-o", str(report_path)]
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
-
-        # --- НОВЫЙ БЛОК: сохраняем returncode в JSON ---
-        if report_path.exists():
-            with open(report_path, 'r', encoding='utf-8') as f:
-                report_data = json.load(f)
-            report_data['returncode'] = result.returncode
-            with open(report_path, 'w', encoding='utf-8') as f:
-                json.dump(report_data, f, indent=2)
-        else:
-            # Если отчёт не создан, создаём его с ошибкой
-            error_report = {
-                "returncode": result.returncode,
-                "warnings": [],
-                "error": "Report file was not created by analyzer",
-                "stderr": result.stderr
-            }
-            with open(report_path, 'w', encoding='utf-8') as f:
-                json.dump(error_report, f, indent=2)
-        # -----------------------------------------------
-
     except subprocess.TimeoutExpired:
         return None, f"Static analyzer timed out after {timeout} seconds", -1, None
     except PermissionError:
@@ -56,5 +38,25 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None):
         return None, f"OS error occurred: {str(e)}", -1, None
     except (TypeError, ValueError) as e:
         return None, f"Invalid argument: {str(e)}", -1, None
+
+    # Отдельный блок для сохранения returncode в JSON
+    try:
+        if report_path.exists():
+            with open(report_path, 'r', encoding='utf-8') as f:
+                report_data = json.load(f)
+            report_data['returncode'] = result.returncode
+            with open(report_path, 'w', encoding='utf-8') as f:
+                json.dump(report_data, f, indent=2)
+        else:
+            error_report = {
+                "returncode": result.returncode,
+                "warnings": [],
+                "error": "Report file was not created by analyzer",
+                "stderr": result.stderr
+            }
+            with open(report_path, 'w', encoding='utf-8') as f:
+                json.dump(error_report, f, indent=2)
+    except Exception as e:
+        return None, f"Failed to update report with returncode: {e}", -1, None
 
     return result.stdout, result.stderr, result.returncode, report_path
