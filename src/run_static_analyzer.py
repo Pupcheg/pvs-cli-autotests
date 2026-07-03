@@ -56,4 +56,4 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None):
     except Exception as e:
         return None, str(e), -1
 
-    return result.stdout, result.stderr, result.returncode, str(report_path)
+    return result.stdout, result.stderr, result.returncode, report_path
