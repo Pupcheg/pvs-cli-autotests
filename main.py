@@ -4,6 +4,7 @@ try:
     from get_analyzer_version import get_analyzer_version
 except ModuleNotFoundError:
     print("Library not installed. Use ","pip install -e .",".")
+    exit(1)
 import argparse
 import os
 
