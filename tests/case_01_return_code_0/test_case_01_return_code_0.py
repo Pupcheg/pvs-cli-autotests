@@ -1,9 +1,9 @@
 #from src.get_test_files_js_ts import get_test_files_js_ts
-import sys
+#import sys
 import pytest
 import json
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
+#sys.path.insert(0, str(Path(__file__).parent.parent.parent.parent))
 
 #test_files = get_test_files_js_ts(Path(__file__).parent)
 
