@@ -20,7 +20,8 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None):
     if not source_file_dir.is_dir():
         return None, f"Source file not found at {source_file_dir}", -1, None
 
-    report_path = reports_dir / (source_file_dir.stem + '_report.json')
+    report_name = source_file_dir.parent.name + '_' + source_file_dir.stem + '_report.json'
+    report_path = reports_dir / report_name
     cmd = [f"{static_analyzer_path}", "analyze", f"{source_file_dir}", "-o", f"{report_path}"]
 
     # Запуск анализатора
