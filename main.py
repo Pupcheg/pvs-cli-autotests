@@ -12,7 +12,11 @@ import os
 if __name__ == "__main__":  # используйте только анлийские буквы в путях 
     parser = argparse.ArgumentParser()
     parser.add_argument("analyzer_path", help="Path to the executable file (*.exe) to be tested.")
-    parser.add_argument("--report", default=None, help="Path to save the report (*.md)")
+    parser.add_argument(
+        "--report",
+        default=None,
+        help="Path to save the report.md (optional). Must be a full path to a file, e.g. C:\\reports\\result.md. If not specified, saves to reports/final/report.md"
+    )
     args = parser.parse_args()
     if os.path.exists(args.analyzer_path) and os.path.isfile(args.analyzer_path):
     
