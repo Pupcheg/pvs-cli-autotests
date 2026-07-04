@@ -16,7 +16,8 @@ if __name__ == "__main__":  # используйте только анлийск
     args = parser.parse_args()
     if os.path.exists(args.analyzer_path) and os.path.isfile(args.analyzer_path):
     
-        stdout, stderr, code = run_tests(args.analyzer_path)
+        tests_dir = os.path.join(os.path.dirname(__file__), "tests")
+        stdout, stderr, code = run_tests(args.analyzer_path, test_folder_path=tests_dir)
         print(stdout, stderr, code)
 
         build_report(
