@@ -1,14 +1,12 @@
 try:
     from run_tests import run_tests
     from report_builder import build_report
-    from get_analyzer_version import get_analyzer_version
+    from get_analyzer_version import get_analyzer_version, remove_json_reports
 except ModuleNotFoundError:
-    print("Library not installed. Use ","pip install -e .",".")
+    print("Package not installed. Use ","pip install -e .",".")
     exit(1)
 import argparse
 import os
-
-
 
 if __name__ == "__main__":  # используйте только анлийские буквы в путях 
     parser = argparse.ArgumentParser()
@@ -24,6 +22,7 @@ if __name__ == "__main__":  # используйте только анлийск
         reports_dir=args.report,
         analyzer_version=get_analyzer_version(args.analyzer_path)
         )
+        remove_json_reports()
     else:
         print("Рath invalid.")
     
