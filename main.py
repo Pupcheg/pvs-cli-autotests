@@ -12,18 +12,17 @@ import os
 if __name__ == "__main__":  # используйте только анлийские буквы в путях 
     parser = argparse.ArgumentParser()
     parser.add_argument("analyzer_path", help="Path to the executable file (*.exe) to be tested.")
-    parser.add_argument("--report",default="reports", help="Path to save the report (*.md)")
-    args=parser.parse_args()
-    if os.path.exists(args.analyzer_path) and os.path.isfile(args.analyzer_path) :
+    parser.add_argument("--report", default=None, help="Path to save the report (*.md)")
+    args = parser.parse_args()
+    if os.path.exists(args.analyzer_path) and os.path.isfile(args.analyzer_path):
     
         stdout, stderr, code = run_tests(args.analyzer_path)
         print(stdout, stderr, code)
 
         build_report(
-        reports_dir=args.report,
-        analyzer_version=get_analyzer_version(args.analyzer_path)
+            reports_dir="reports",
+            output_path=args.report,
+            analyzer_version=get_analyzer_version(args.analyzer_path)
         )
     else:
         print("Рath invalid.")
-    
- 
