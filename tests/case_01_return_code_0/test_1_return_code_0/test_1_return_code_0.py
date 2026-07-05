@@ -12,7 +12,7 @@ from pathlib import Path
 test_dir=Path(__file__).parent.parent.parent / "examples_ts_js"
 
 def test_error_code(analyzer):
-    stdout, stderr, returncode, report_file = analyzer(str(test_dir))
+    stdout, stderr, returncode, report_file = analyzer(str(test_dir), expected_code=0)
     assert returncode == 0, f"Expected return code 0, but got {returncode}. Stderr: {stderr}"
     assert report_file.exists(), f"Expected report file {report_file} to exist, but it does not."
     with report_file.open("r") as f:
