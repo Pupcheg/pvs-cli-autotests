@@ -29,14 +29,16 @@ def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str,
 
             warnings = report_data.get("warnings", [])
             returncode = report_data.get("returncode", -1)
-            
-            # Определяем статус на основе кода возврата
-            # 0, 1, 2, 4 – ожидаемые для 12 рассматриваемых кейсов
-            if returncode in [0, 1, 2, 4]:
+            expected_code = report_data.get("expected_code", None)
+
+            # Статус определяется сравнением returncode и expected_code
+            if expected_code is None:
+                status = "неизвестно"
+            elif returncode == expected_code:
                 status = "соответствует"
             else:
                 status = "не соответствует"
-            
+
             # Формируем список предупреждений
             warnings_list = []
             for w in warnings[:5]:
@@ -46,13 +48,13 @@ def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str,
                     warnings_list.append(f"{code}: {message[:50]}...")
                 else:
                     warnings_list.append(code)
-            
+
             warnings_text = ", ".join(warnings_list)
             if len(warnings) > 5:
                 warnings_text += f" и ещё {len(warnings) - 5} шт."
             if not warnings_text:
                 warnings_text = "нет предупреждений"
-            
+
             # Определяем направление по имени файла
             direction = "CLI"
             name_lower = case_name.lower()
@@ -69,13 +71,19 @@ def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str,
             elif "help" in name_lower or "version" in name_lower:
                 direction = "Справочная информация"
 
+            # Формируем actual
+            if expected_code is not None:
+                actual_text = f"ожидался код {expected_code}, получен {returncode}, предупреждения: {warnings_text}"
+            else:
+                actual_text = f"код возврата {returncode}, предупреждения: {warnings_text}"
+
             result = {
                 "case_name": case_name.replace("_report", "").replace("_", " ").title(),
                 "requirement": "См. спецификацию, разделы 2.2.2, 2.2.3, 2.2.14",
                 "description": f"Проверка поведения анализатора на тестовом примере",
                 "test_data": str(report_file.parent),
                 "command": f"pvs-js analyze {case_name}",
-                "actual": f"код возврата {returncode}, предупреждения: {warnings_text}",
+                "actual": actual_text,
                 "status": status,
                 "direction": direction
             }
