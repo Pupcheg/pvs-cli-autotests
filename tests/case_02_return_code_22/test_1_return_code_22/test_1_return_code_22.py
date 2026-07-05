@@ -18,12 +18,12 @@ def test_error_code(analyzer):
         
         try:
             license_original.unlink()
-            stdout, stderr, returncode, report_file = analyzer(str(test_dir))
+            stdout, stderr, returncode, report_file = analyzer(str(test_dir), expected_code=22)
             assert returncode == 22, f"Expected return code 22, but got {returncode}. Stderr: {stderr}"
         finally:
             if not license_original.exists() and license_temp.exists():
                 shutil.copy2(license_temp,license_original)
                 license_temp.unlink()
     else:
-        stdout, stderr, returncode, report_file = analyzer(str(test_dir))
+        stdout, stderr, returncode, report_file = analyzer(str(test_dir), expected_code=22)
         assert returncode == 22, f"Expected return code 22, but got {returncode}. Stderr: {stderr}"
