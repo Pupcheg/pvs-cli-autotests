@@ -3,14 +3,13 @@ import json
 from pathlib import Path
 
 
-def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None):
+def run_static_analyzer(static_analyzer_path, source_file_dir, command_line, expected_code=None):
     """
     Runs a static analyzer on the given source file.
     You can specify a timeout in seconds. If the static analyzer takes longer than the timeout, it will be terminated.
 
     """
 
-    source_file_dir = Path(source_file_dir)
     reports_dir = Path(__file__).parent.parent / "reports"
     reports_dir.mkdir(exist_ok=True)
     if not static_analyzer_path or not source_file_dir:
@@ -20,15 +19,15 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None):
     if not source_file_dir.is_dir():
         return None, f"Source file not found at {source_file_dir}", -1, None
 
+    # Уникальное имя файла: родительская_папка + имя_папки_теста
     report_name = source_file_dir.parent.name + '_' + source_file_dir.stem + '_report.json'
     report_path = reports_dir / report_name
-    cmd = [f"{static_analyzer_path}", "analyze", f"{source_file_dir}", "-o", f"{report_path}"]
+
+    command=[f"{static_analyzer_path}"]+command_line
 
     # Запуск анализатора
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
-    except subprocess.TimeoutExpired:
-        return None, f"Static analyzer timed out after {timeout} seconds", -1, None
+        result = subprocess.run(command, capture_output=True, text=True)
     except PermissionError:
         return None, f"Permission denied when trying to execute {static_analyzer_path}", -1, None
     except OSError as e:
@@ -36,12 +35,13 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None):
     except (TypeError, ValueError) as e:
         return None, f"Invalid argument: {str(e)}", -1, None
 
-    # Отдельный блок для сохранения returncode в JSON
     try:
         if report_path.exists():
             with open(report_path, 'r', encoding='utf-8') as f:
                 report_data = json.load(f)
             report_data['returncode'] = result.returncode
+            if expected_code is not None:
+                report_data['expected_code'] = expected_code
             with open(report_path, 'w', encoding='utf-8') as f:
                 json.dump(report_data, f, indent=2)
         else:
@@ -51,6 +51,8 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None):
                 "error": "Report file was not created by analyzer",
                 "stderr": result.stderr
             }
+            if expected_code is not None:
+                error_report['expected_code'] = expected_code
             with open(report_path, 'w', encoding='utf-8') as f:
                 json.dump(error_report, f, indent=2)
     except Exception as e:
