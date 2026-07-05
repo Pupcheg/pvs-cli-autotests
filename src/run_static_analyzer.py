@@ -2,6 +2,9 @@ import subprocess
 import json
 from pathlib import Path
 
+# Счётчик для уникальных имён файлов
+_counter = 0
+
 
 def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None, expected_code=None):
     """
@@ -9,6 +12,9 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None, exp
     You can specify a timeout in seconds. If the static analyzer takes longer than the timeout, it will be terminated.
 
     """
+
+    global _counter
+    _counter += 1
 
     source_file_dir = Path(source_file_dir)
     reports_dir = Path(__file__).parent.parent / "reports"
@@ -20,8 +26,8 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None, exp
     if not source_file_dir.is_dir():
         return None, f"Source file not found at {source_file_dir}", -1, None
 
-    # Уникальное имя файла: родительская_папка + имя_папки_теста
-    report_name = source_file_dir.parent.name + '_' + source_file_dir.stem + '_report.json'
+    # Уникальное имя файла: имя_папки + номер_счётчика
+    report_name = source_file_dir.stem + '_' + str(_counter) + '_report.json'
     report_path = reports_dir / report_name
 
     cmd = [f"{static_analyzer_path}", "analyze", f"{source_file_dir}", "-o", f"{report_path}"]
