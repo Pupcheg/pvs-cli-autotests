@@ -2,19 +2,12 @@ import subprocess
 import json
 from pathlib import Path
 
-# Счётчик для уникальных имён файлов
-_counter = 0
 
-
-def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None, expected_code=None):
+def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None, expected_code=None, command_line=None):
     """
     Runs a static analyzer on the given source file.
     You can specify a timeout in seconds. If the static analyzer takes longer than the timeout, it will be terminated.
-
     """
-
-    global _counter
-    _counter += 1
 
     source_file_dir = Path(source_file_dir)
     reports_dir = Path(__file__).parent.parent / "reports"
@@ -26,11 +19,14 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None, exp
     if not source_file_dir.is_dir():
         return None, f"Source file not found at {source_file_dir}", -1, None
 
-    # Уникальное имя файла: имя_папки + номер_счётчика
-    report_name = source_file_dir.stem + '_' + str(_counter) + '_report.json'
-    report_path = reports_dir / report_name
-
-    cmd = [f"{static_analyzer_path}", "analyze", f"{source_file_dir}", "-o", f"{report_path}"]
+    # Формируем команду
+    if command_line is not None:
+        cmd = [f"{static_analyzer_path}"] + command_line
+    else:
+        # если команда не передана, используем стандартную
+        report_name = source_file_dir.stem + '_report.json'
+        report_path = reports_dir / report_name
+        cmd = [f"{static_analyzer_path}", "analyze", f"{source_file_dir}", "-o", f"{report_path}"]
 
     # Запуск анализатора
     try:
@@ -44,6 +40,19 @@ def run_static_analyzer(static_analyzer_path, source_file_dir, timeout=None, exp
     except (TypeError, ValueError) as e:
         return None, f"Invalid argument: {str(e)}", -1, None
 
+    # Определяем путь к отчёту
+    if command_line is not None:
+        report_path = None
+        for i, arg in enumerate(cmd):
+            if arg == "-o" and i + 1 < len(cmd):
+                report_path = Path(cmd[i + 1])
+                break
+        if report_path is None:
+            report_name = source_file_dir.stem + '_report.json'
+            report_path = reports_dir / report_name
+    # else: report_path уже определён выше
+
+    # Сохраняем returncode и expected_code в JSON
     try:
         if report_path.exists():
             with open(report_path, 'r', encoding='utf-8') as f:
