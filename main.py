@@ -8,7 +8,7 @@ except ModuleNotFoundError:
 import argparse
 import os
 
-if __name__ == "__main__":  # используйте только анлийские буквы в путях 
+if __name__ == "__main__":  # используйте только латиницу в путях 
     parser = argparse.ArgumentParser()
     parser.add_argument("analyzer_path", help="Path to the executable file (*.exe) to be tested.")
     parser.add_argument(
