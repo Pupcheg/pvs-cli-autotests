@@ -1,7 +1,8 @@
 try:
     from run_tests import run_tests
     from report_builder import build_report
-    from get_analyzer_version import get_analyzer_version, remove_json_reports
+    from get_analyzer_version import get_analyzer_version
+    from remove_json_reports import remove_json_reports
 except ModuleNotFoundError:
     print("Package not installed. Use ","pip install -e .",".")
     exit(1)

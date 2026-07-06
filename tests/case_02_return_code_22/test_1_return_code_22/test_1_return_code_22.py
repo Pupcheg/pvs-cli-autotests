@@ -6,14 +6,12 @@ import pytest
 import os
 from pathlib import Path
 import shutil
-test_dir=Path(__file__).parent.parent.parent / "examples_ts_js"
-report_path=Path(__file__).parent.parent.parent.parent / "reports"
-report_path.mkdir(exist_ok=True)
-test_dirs=[d for d in test_dir.iterdir() if d.is_dir()]
-test_name=Path(__file__).stem
+from tests_tools import get_test_dirs, assert_return_code
 
-@pytest.mark.parametrize("test_dir",test_dirs)
-def test_error_code(analyzer,test_dir):
+@pytest.mark.parametrize("test_dir",get_test_dirs())
+def test_error_code(analyzer,test_dir, report_path, test_name):
+    expected_code = 22
+
     command_line = ["analyze", f"{test_dir}", "-o", f"{report_path}/{test_dir.name}_{test_name}_report.json"]
     license_original=Path(os.getenv('APPDATA'))/"PVS-Studio"/"Settings.xml"
 
@@ -21,15 +19,16 @@ def test_error_code(analyzer,test_dir):
     shutil.copy2(license_original, license_temp)
 
     if license_original.exists():
-        
         try:
             license_original.unlink()
-            stdout, stderr, returncode, report_file = analyzer(test_dir,command_line, expected_code=22)
-            assert returncode == 22, f"Expected return code 22, but got {returncode}. Stderr: {stderr}"
+            stdout, stderr, returncode = analyzer(command_line)
+
+            assert_return_code(returncode, expected_code, stderr)
         finally:
             if not license_original.exists() and license_temp.exists():
                 shutil.copy2(license_temp,license_original)
                 license_temp.unlink()
     else:
-        stdout, stderr, returncode, report_file = analyzer(str(test_dir), expected_code=22)
-        assert returncode == 22, f"Expected return code 22, but got {returncode}. Stderr: {stderr}"
+        stdout, stderr, returncode = analyzer(command_line)
+
+        assert_return_code(returncode, expected_code, stderr)

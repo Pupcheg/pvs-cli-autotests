@@ -4,21 +4,24 @@
 import pytest
 import json
 from pathlib import Path
+from tests_tools import get_test_dirs,assert_return_code, assert_no_stderr
 
-test_dir=Path(__file__).parent.parent.parent / "examples_ts_js" 
-report_path=Path(__file__).parent.parent.parent.parent / "reports"
-report_path.mkdir(exist_ok=True)
-test_dirs=[d for d in test_dir.iterdir() if d.is_dir()]
-test_name=Path(__file__).stem
+@pytest.mark.parametrize("test_dir",get_test_dirs())
+def test_error_code(analyzer, test_dir,report_path, test_name):
+    expected_code=0
 
-
-@pytest.mark.parametrize("test_dir",test_dirs)
-def test_error_code(analyzer, test_dir):
+    report_file=report_path/f"{test_dir.name}_{test_name}_report.json"
     command_line = ["analyze", f"{test_dir}", "-o", f"{report_path}/{test_dir.name}_{test_name}_report.json"]
-    stdout, stderr, returncode, report_file = analyzer(test_dir,command_line, expected_code=0)
-    assert returncode == 0, f"Expected return code 0, but got {returncode}. Stderr: {stderr}"
+    stdout, stderr, returncode = analyzer(command_line)
+
+    assert_return_code(returncode, expected_code, stderr)
+
     assert report_file.exists(), f"Expected report file {report_file} to exist, but it does not."
+
     with report_file.open("r") as f:
         report_content = json.load(f)
+
     assert isinstance(report_content, dict), f"Expected report content to be a dictionary, but got {type(report_content)}"
-    assert stderr == "", f"Expected no stderr output, but got: {stderr}"
+
+    assert_no_stderr(stderr)
+
