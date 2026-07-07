@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from src.report_generator import generate_report
@@ -29,7 +30,13 @@ def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str,
 
             warnings = report_data.get("warnings", [])
             returncode = report_data.get("returncode", -1)
-            expected_code = report_data.get("expected_code", None)
+
+            # Извлекаем expected_code из имени файла
+            match = re.search(r'return_code_(\d+)(?:_report|$)', case_name)
+            if match:
+                expected_code = int(match.group(1))
+            else:
+                expected_code = None
 
             # Статус определяется сравнением returncode и expected_code
             if expected_code is None:
@@ -122,8 +129,4 @@ def build_report(
 
     generate_report(results, output_path=output_path, analyzer_version=analyzer_version)
     print(f"Отчёт сохранён: {Path(output_path).absolute()}")
-
-
-if __name__ == "__main__":
-    reports_dir = Path(__file__).parent.parent / "reports"
-    build_report(str(reports_dir), analyzer_version="1.2.3")
+    
