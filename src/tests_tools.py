@@ -2,14 +2,12 @@ from pathlib import Path
 import platform
 import os
 
-def get_license_path():
+def get_license_temp_path(temp_dir):
     system=platform.system()
     if system == 'Windows':
-        return Path(os.getenv('APPDATA'))/"PVS-Studio"/"Settings.xml"
-    elif system=='Darwin':
-        return Path.home() / ".config" / "PVS-Studio" / "PVS-Studio.lic"
+        return Path(os.getenv('APPDATA'))/"PVS-Studio"/"Settings.xml", temp_dir /"Settings.xml"
     else:
-        return Path.home() / ".config" / "PVS-Studio" / "PVS-Studio.lic"
+        return Path.home() / ".config" / "PVS-Studio" / "PVS-Studio.lic", temp_dir /"PVS-Studio.lic"
 
 
 def get_test_dirs():
