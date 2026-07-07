@@ -10,7 +10,7 @@
 import pytest
 import json
 from pathlib import Path
-from tests_tools import get_test_dirs,assert_return_code, assert_no_stderr,assers_json
+from tests_tools import get_test_dirs,assert_return_code, assert_no_stderr,asserts_json
 
 @pytest.mark.parametrize("test_dir",get_test_dirs())
 def test_error_code(analyzer, test_dir,report_path, test_name):
@@ -29,4 +29,4 @@ def test_error_code(analyzer, test_dir,report_path, test_name):
 
     assert_no_stderr(stderr)
 
-    assers_json(report_content)
+    asserts_json(report_content)

@@ -11,7 +11,7 @@ import pytest
 import json
 import shutil
 from pathlib import Path
-from tests_tools import assert_return_code, assert_no_stderr,assers_json
+from tests_tools import assert_return_code, assert_no_stderr,asserts_json
 
 
 path_1= Path(__file__).parent.parent.parent /"examples_ts_js" 
@@ -42,4 +42,4 @@ def test_error_code(analyzer,test_dir):
 
     assert_no_stderr(stderr)
 
-    assers_json(report_content)
+    asserts_json(report_content)

@@ -22,7 +22,7 @@ def assert_return_code(return_code, expected_code, stderr):
 def assert_no_stderr(stderr):
     assert stderr == "", f"Expected no stderr output, but got: {stderr}"
 
-def assers_json(report_content):
+def asserts_json(report_content):
     assert isinstance(report_content, dict), f"Expected report content to be a dictionary, but got {type(report_content)}"
     assert "version" in report_content, "Not a PVS-Studio report"
     assert "warnings" in report_content, "Missing 'warnings' field"
