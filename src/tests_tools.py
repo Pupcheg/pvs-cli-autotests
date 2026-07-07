@@ -1,4 +1,20 @@
 from pathlib import Path
+import platform
+import os
+
+def get_license_path():
+    system=platform.system()
+    if system == 'Windows':
+        return Path(os.getenv('APPDATA'))/"PVS-Studio"/"Settings.xml"
+    elif system=='Darwin':
+        return Path.home() / "Library" / "Application Support" / "PVS-Studio" / "Settings.xml"
+    else:
+        license_original = Path.home() / ".config" / "PVS-Studio" / "Settings.xml"
+        if license_original.exists():
+            return license_original
+        else:
+            return Path.home() / "PVS-Studio" / "Settings.xml"
+
 
 def get_test_dirs():
     test_dir=Path(__file__).parent.parent / "tests" /"examples_ts_js" 
@@ -15,3 +31,4 @@ def assers_json(report_content):
     assert "version" in report_content, "Not a PVS-Studio report"
     assert "warnings" in report_content, "Missing 'warnings' field"
     assert isinstance(report_content["warnings"], list), "Warnings should be a list"
+
