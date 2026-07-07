@@ -7,13 +7,9 @@ def get_license_path():
     if system == 'Windows':
         return Path(os.getenv('APPDATA'))/"PVS-Studio"/"Settings.xml"
     elif system=='Darwin':
-        return Path.home() / "Library" / "Application Support" / "PVS-Studio" / "PVS-Studio.lic"
+        return Path.home() / ".config" / "PVS-Studio" / "PVS-Studio.lic"
     else:
-        license_original = Path.home() / ".config" / "PVS-Studio" / "PVS-Studio.lic"
-        if license_original.exists():
-            return license_original
-        else:
-            return Path.home() / "PVS-Studio" / "PVS-Studio.lic"
+        return Path.home() / ".config" / "PVS-Studio" / "PVS-Studio.lic"
 
 
 def get_test_dirs():
