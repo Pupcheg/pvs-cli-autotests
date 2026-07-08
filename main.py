@@ -17,8 +17,8 @@ if __name__ == "__main__":  # используйте только латиниц
         default=None,
         help="Path to save the report.md (optional). Must be a full path to a file, e.g. C:\\reports\\result.md. If not specified, saves to reports/final/report.md"
     )
-    args=parser.parse_args()
-    if os.path.exists(args.analyzer_path) and os.path.isfile(args.analyzer_path) :
+    args = parser.parse_args()
+    if os.path.exists(args.analyzer_path) and os.path.isfile(args.analyzer_path):
     
         stdout, stderr, code = run_tests(args.analyzer_path)
         print(stdout, stderr, code)
@@ -26,10 +26,10 @@ if __name__ == "__main__":  # используйте только латиниц
         build_report(
             reports_dir="reports",
             output_path=args.report,
-            analyzer_version=get_analyzer_version(args.analyzer_path)
+            analyzer_version=get_analyzer_version(args.analyzer_path),
+            stdout=stdout,
+            stderr=stderr
         )
         remove_json_reports()
     else:
-        print("Рath invalid.")
-    
- 
+        print("Path invalid.")

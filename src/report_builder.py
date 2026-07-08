@@ -1,10 +1,74 @@
 import json
+import re
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 from src.report_generator import generate_report
 
 
-def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str, Any]]:
+def parse_pytest_output(stdout: str, stderr: str) -> Dict[str, Dict[str, Any]]:
+    """
+    Парсит вывод pytest и возвращает словарь:
+    {имя_теста: {"status": "passed"|"failed", "returncode": int, "expected_code": int}}
+    """
+    output = stdout + "\n" + stderr
+    results = {}
+    lines = output.splitlines()
+
+    # Предварительно находим все ошибки с их позициями
+    errors = []
+    for idx, line in enumerate(lines):
+        match = re.search(r'Expected return code (\d+), but got (\d+)', line)
+        if match:
+            errors.append((idx, int(match.group(1)), int(match.group(2))))
+
+    # Ищем тесты
+    for i, line in enumerate(lines):
+        # Ищем строки с результатами тестов
+        if ".py" in line and re.search(r'\s+[\.F]', line):
+            # Извлекаем имя теста (имя файла)
+            test_match = re.search(r'([^/\\]+)\.py', line)
+            if not test_match:
+                continue
+            test_name = test_match.group(1)
+
+            # Определяем статус
+            if "F" in line:
+                status = "failed"
+                # Ищем ошибку в следующих строках до следующего теста
+                next_test_idx = None
+                for j in range(i + 1, len(lines)):
+                    if ".py" in lines[j] and re.search(r'\s+[\.F]', lines[j]):
+                        next_test_idx = j
+                        break
+                if next_test_idx is None:
+                    next_test_idx = len(lines)
+
+                found_error = None
+                for err_idx, expected, actual in errors:
+                    if i < err_idx < next_test_idx:
+                        found_error = (expected, actual)
+                        break
+
+                if found_error:
+                    expected, actual = found_error
+                    results[test_name] = {
+                        "status": status,
+                        "returncode": actual,
+                        "expected_code": expected
+                    }
+                else:
+                    results[test_name] = {"status": status, "returncode": None, "expected_code": None}
+            elif "." in line:
+                results[test_name] = {"status": "passed", "returncode": None, "expected_code": None}
+
+    return results
+
+
+def collect_results_from_reports(
+    reports_dir: str = "reports",
+    stdout: str = "",
+    stderr: str = ""
+) -> List[Dict[str, Any]]:
     """
     Собирает результаты из всех JSON-отчётов в папке reports.
     """
@@ -20,6 +84,8 @@ def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str,
         print(f"JSON-файлы не найдены в {reports_dir}")
         return results
 
+    test_statuses = parse_pytest_output(stdout, stderr)
+
     for report_file in json_files:
         case_name = report_file.stem
 
@@ -28,16 +94,38 @@ def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str,
                 report_data = json.load(f)
 
             warnings = report_data.get("warnings", [])
-            returncode = report_data.get("returncode", -1)
-            expected_code = report_data.get("expected_code", None)
 
-            # Статус определяется сравнением returncode и expected_code
-            if expected_code is None:
-                status = "неизвестно"
-            elif returncode == expected_code:
+            # Извлекаем имя теста из имени файла
+            test_name = case_name.replace("_report", "")
+            matched_test = None
+            for known_test in test_statuses.keys():
+                if known_test in test_name:
+                    matched_test = known_test
+                    break
+
+            if matched_test is None:
+                parts = case_name.split("_")
+                matched_test = "_".join(parts[-2:]) if len(parts) >= 2 else case_name
+
+            test_info = test_statuses.get(matched_test, {})
+            status_from_pytest = test_info.get("status", "unknown")
+            expected_code = test_info.get("expected_code")
+            returncode = test_info.get("returncode")
+
+            # Если returncode не найден в pytest, берем из JSON
+            if returncode is None:
+                returncode = report_data.get("returncode", -1)
+
+            # Определяем статус
+            if status_from_pytest == "passed":
                 status = "соответствует"
+            elif status_from_pytest == "failed":
+                if expected_code is not None:
+                    status = "соответствует" if returncode == expected_code else "не соответствует"
+                else:
+                    status = "неизвестно"
             else:
-                status = "не соответствует"
+                status = "неизвестно"
 
             # Формируем список предупреждений
             warnings_list = []
@@ -71,7 +159,6 @@ def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str,
             elif "help" in name_lower or "version" in name_lower:
                 direction = "Справочная информация"
 
-            # Формируем actual
             if expected_code is not None:
                 actual_text = f"ожидался код {expected_code}, получен {returncode}, предупреждения: {warnings_text}"
             else:
@@ -101,7 +188,9 @@ def collect_results_from_reports(reports_dir: str = "reports") -> List[Dict[str,
 def build_report(
     reports_dir: str = "reports",
     output_path: Optional[str] = None,
-    analyzer_version: Optional[str] = None
+    analyzer_version: Optional[str] = None,
+    stdout: str = "",
+    stderr: str = ""
 ):
     """
     Собирает результаты и генерирует отчёт.
@@ -109,8 +198,10 @@ def build_report(
     - reports_dir: папка, где лежат JSON-отчёты (по умолчанию "reports")
     - output_path: куда сохранить report.md (если None, то reports/final/report.md)
     - analyzer_version: версия анализатора
+    - stdout: вывод pytest (stdout)
+    - stderr: вывод pytest (stderr)
     """
-    results = collect_results_from_reports(reports_dir)
+    results = collect_results_from_reports(reports_dir, stdout, stderr)
     if not results:
         print("Не найдено результатов для отчёта.")
         return
@@ -122,8 +213,3 @@ def build_report(
 
     generate_report(results, output_path=output_path, analyzer_version=analyzer_version)
     print(f"Отчёт сохранён: {Path(output_path).absolute()}")
-
-
-if __name__ == "__main__":
-    reports_dir = Path(__file__).parent.parent / "reports"
-    build_report(str(reports_dir), analyzer_version="1.2.3")
