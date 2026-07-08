@@ -4,7 +4,7 @@ try:
     from get_analyzer_version import get_analyzer_version
     from remove_json_reports import remove_json_reports
 except ModuleNotFoundError:
-    print("Package not installed. Use pip install -e .")
+    print("Package not installed. Use ","pip install -e .",".")
     exit(1)
 import argparse
 import os
