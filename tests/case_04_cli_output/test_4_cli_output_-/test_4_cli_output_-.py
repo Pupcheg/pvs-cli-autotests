@@ -9,7 +9,6 @@
 
 import pytest
 import json
-from pathlib import Path
 from tests_tools import get_test_dirs,assert_return_code, assert_no_stderr,asserts_json
 
 @pytest.mark.parametrize("test_dir",get_test_dirs())
@@ -17,7 +16,7 @@ def test_error_code(analyzer, test_dir):
     expected_code=0
 
     command_line = ["analyze", f"{test_dir}", "-o -"]
-    stdout, stderr, returncode = analyzer(command_line)
+    stdout, stderr, returncode, time = analyzer(command_line)
 
     assert_return_code(returncode, expected_code, stderr)
 

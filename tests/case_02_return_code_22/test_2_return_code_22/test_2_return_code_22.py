@@ -3,7 +3,6 @@
 #Проверка лицензии:
 #Утилита анализа выдаёт код возврата 22, если лицензия невалидна
 import pytest
-import os
 from pathlib import Path
 import shutil
 
@@ -16,17 +15,13 @@ def test_error_code(analyzer,test_dir,report_path, test_name):
     command_line = ["analyze", f"{test_dir}", "-o", f"{report_path}/{test_dir.name}_{test_name}_report.json"]
     license_original, license_temp=get_license_temp_path(Path(__file__).parent)
 
-    #license_original=Path(os.getenv('APPDATA'))/"PVS-Studio"/"Settings.xml"
-
-    #license_temp=Path(__file__).parent /"Settings.xml"
-
     shutil.copy2(license_original, license_temp)
 
     content = license_original.read_text(encoding='utf-8')
     license_original.write_text(content[:-2], encoding='utf-8')
 
     try:
-        stdout, stderr, returncode = analyzer(command_line)
+        stdout, stderr, returncode, time = analyzer(command_line)
 
         assert_return_code(returncode, expected_code, stderr)
     finally:

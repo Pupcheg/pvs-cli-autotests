@@ -9,7 +9,7 @@ def test_error_code(analyzer):
     expected_code=0
 
     command_line = [ "--version"]
-    stdout, stderr, returncode = analyzer( command_line)
+    stdout, stderr, returncode, time = analyzer( command_line)
 
     assert_return_code(returncode, expected_code, stderr)
 

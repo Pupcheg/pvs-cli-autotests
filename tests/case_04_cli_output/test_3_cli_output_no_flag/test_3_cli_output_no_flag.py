@@ -31,7 +31,7 @@ def test_error_code(analyzer,test_dir):
 
     report_file= path_2 / "PVS-Studio.json"
     command_line = ["analyze", f"{test_dir}"]
-    stdout, stderr, returncode = analyzer(command_line)
+    stdout, stderr, returncode, time = analyzer(command_line)
 
     assert_return_code(returncode, expected_code, stderr)
 

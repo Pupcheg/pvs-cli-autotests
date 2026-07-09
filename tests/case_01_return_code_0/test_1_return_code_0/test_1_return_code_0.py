@@ -12,7 +12,7 @@ def test_error_code(analyzer, test_dir,report_path, test_name):
 
     report_file=report_path/f"{test_dir.name}_{test_name}_report.json"
     command_line = ["analyze", f"{test_dir}", "-o", f"{report_path}/{test_dir.name}_{test_name}_report.json"]
-    stdout, stderr, returncode = analyzer(command_line)
+    stdout, stderr, returncode, time= analyzer(command_line)
 
     assert_return_code(returncode, expected_code, stderr)
 
