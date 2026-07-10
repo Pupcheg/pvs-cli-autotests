@@ -12,10 +12,15 @@ def get_license_temp_path(temp_dir):
 
 def get_test_dirs():
     test_dir=Path(__file__).parent.parent / "tests" /"examples_ts_js" 
-    return [d for d in test_dir.iterdir() if d.is_dir()]
+    return [d for d in test_dir.iterdir() if d.is_dir() and d.name != 'test_example_3']
+
+def get_big_test_dir():
+    test_dir=Path(__file__).parent.parent / "tests" /"examples_ts_js" 
+    return [d for d in test_dir.iterdir() if d.name == 'test_example_3']
 
 def assert_return_code(return_code, expected_code, stderr):
     assert return_code == expected_code, f"Expected return code {expected_code}, but got {return_code}. Stderr: {stderr}"
+
 
 def assert_no_stderr(stderr):
     assert stderr == "", f"Expected no stderr output, but got: {stderr}"

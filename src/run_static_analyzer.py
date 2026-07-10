@@ -1,6 +1,6 @@
 import subprocess
 from pathlib import Path
-
+import time
 
 def run_static_analyzer(static_analyzer_path, command_line):
     """
@@ -14,7 +14,9 @@ def run_static_analyzer(static_analyzer_path, command_line):
     if not Path(static_analyzer_path).is_file():
         return None, f"Static analyzer not found at {static_analyzer_path}", -1, None   
 
+
     command=[f"{static_analyzer_path}"]+command_line
+    start_time = time.time()
 
     try:
         result = subprocess.run(command, capture_output=True, text=True)
@@ -25,4 +27,5 @@ def run_static_analyzer(static_analyzer_path, command_line):
     except (TypeError, ValueError) as e:
         return None, f"Invalid argument: {str(e)}", -1, None
 
-    return result.stdout, result.stderr, result.returncode
+    elapsed_time=time.time() - start_time
+    return result.stdout, result.stderr, result.returncode, elapsed_time

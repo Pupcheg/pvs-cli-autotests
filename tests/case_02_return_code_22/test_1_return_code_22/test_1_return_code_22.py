@@ -3,7 +3,6 @@
 #Проверка лицензии:
 #Утилита анализа выдаёт код возврата 22, если лицензия отсутствует
 import pytest
-import os
 from pathlib import Path
 import shutil
 from tests_tools import get_test_dirs, assert_return_code, get_license_temp_path
@@ -19,7 +18,7 @@ def test_error_code(analyzer,test_dir, report_path, test_name):
     if license_original.exists():
         try:
             license_original.unlink()
-            stdout, stderr, returncode = analyzer(command_line)
+            stdout, stderr, returncode, time = analyzer(command_line)
 
             assert_return_code(returncode, expected_code, stderr)
         finally:
@@ -27,6 +26,6 @@ def test_error_code(analyzer,test_dir, report_path, test_name):
                 shutil.copy2(license_temp,license_original)
                 license_temp.unlink()
     else:
-        stdout, stderr, returncode = analyzer(command_line)
+        stdout, stderr, returncode, time = analyzer(command_line)
 
         assert_return_code(returncode, expected_code, stderr)
